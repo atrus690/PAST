@@ -17,6 +17,9 @@
 5. 「２」キーを押したままで指定した％で自動的にスペースキーが押されます。
 6. 50％を切る前に「１」キーを押したままで選択した特殊ショットやスピンが入力され、その後0％で自動的にスペースキーが押されます。
 
+「１」キー、「２」キーはそれぞれPangYa・Powerの項目を書き換えることで変更できます。
+対応キーは「仮想キーコード」で調べて、10進数に変換してください。
+
 ----
 
 <a name="english"></a>
@@ -34,3 +37,6 @@ An automated shot tool for ProjectG emulator servers using memory monitoring.
 4. Specify the percentage, select the special shot or spin to input, and activate the gauge in-game.
 5. Hold down the “2” key to automatically press the spacebar at the specified percentage.
 6. Hold down the “1” key before the percentage drops below 50% to input the selected special shot or spin. After reaching 0%, the spacebar will be pressed automatically.
+
+The “1” key and “2” key can be changed by modifying the PangYa and Power entries respectively.
+Search for the corresponding key using “virtual key code” and convert it to decimal.
