@@ -1,8 +1,8 @@
-# PAST (ProjectG Automated Shot Tool)
+# PAST (PangYa Assisted Shot Tool)
 [Language: [日本語](#japanese) / [English](#english)]
 
 <a name="japanese"></a>
-メモリ監視を使用した、ProjectGエミュレータサーバー向けの自動ショットツールです。
+メモリ監視を使用した、PangYaの自動ショットツールです。
 
 ## 主な機能
 - メモリ読み取りによる正確なパワーゲージ監視(現在は800x600x32のみ)
@@ -23,7 +23,7 @@
 ----
 
 <a name="english"></a>
-An automated shot tool for ProjectG emulator servers using memory monitoring.
+An automated shot tool for PangYa using memory monitoring.
 
 ## Main Features
 - Accurate power gauge monitoring via memory reading (currently only 800x600x32)
