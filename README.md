@@ -1,4 +1,4 @@
-# PAST (PangYa Assisted Shot Tool)
+# PAST (PangYa-Assisted-Shot-Tool)
 [Language: [日本語](#japanese) / [English](#english)]
 
 <a name="japanese"></a>
