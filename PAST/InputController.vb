@@ -18,7 +18,7 @@ Public Class InputController
 
                      If cmdKeys IsNot Nothing Then
                          For Each k In cmdKeys
-                             SendKeySync(k, 50) : Thread.Sleep(10)
+                             SendKeySync(k, 50) : Thread.Sleep(20)
                          Next
                      End If
 

@@ -101,4 +101,12 @@ Public Class WinApi
         Public BaseAddress As IntPtr : Public AllocationBase As IntPtr : Public AllocationProtect As UInt32
         Public RegionSize As IntPtr : Public State As UInt32 : Public Protect As UInt32 : Public lType As UInt32
     End Structure
+
+    <DllImport("user32.dll")>
+    Public Shared Function GetForegroundWindow() As IntPtr
+    End Function
+
+    <DllImport("user32.dll")>
+    Public Shared Function GetWindowThreadProcessId(ByVal hWnd As IntPtr, ByRef lpdwProcessId As Integer) As Integer
+    End Function
 End Class

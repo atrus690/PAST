@@ -53,6 +53,42 @@ Namespace My
                 Return defaultInstance
             End Get
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("0, 0")>  _
+        Public Property FormLocation() As Global.System.Drawing.Point
+            Get
+                Return CType(Me("FormLocation"),Global.System.Drawing.Point)
+            End Get
+            Set
+                Me("FormLocation") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("49")>  _
+        Public Property PangyaKey() As String
+            Get
+                Return CType(Me("PangyaKey"),String)
+            End Get
+            Set
+                Me("PangyaKey") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("50")>  _
+        Public Property PowerKey() As String
+            Get
+                Return CType(Me("PowerKey"),String)
+            End Get
+            Set
+                Me("PowerKey") = value
+            End Set
+        End Property
     End Class
 End Namespace
 

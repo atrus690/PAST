@@ -1,32 +1,57 @@
 ﻿Imports System.Threading
 
 Public Class Form1
-    Private _zeroPos As Single
-    Private _fullPos As Single
-    Private _scanTargetInt As Integer
+    Private Const GAUGE_0_VAL As Single = 140.0F
+    Private Const GAUGE_100_VAL As Single = 500.0F
+    Private Const GAUGE_RANGE As Single = GAUGE_100_VAL - GAUGE_0_VAL
+
+    Private Const BASE_OFFSET As Integer = &HAFB0A0
+    Private ReadOnly POINTER_OFFSETS As Integer() = {&H128, &HE8}
+
     Private _targetAddress As IntPtr = IntPtr.Zero
     Private _hProcess As IntPtr = IntPtr.Zero
     Private _isMonitoring As Boolean = False
     Private _cts As CancellationTokenSource
     Private _monitoringTask As Task
-    Private _candidateAddresses As List(Of IntPtr)
+    Private _targetPid As Integer = 0
+
+    Private Function IsGameActive() As Boolean
+        If _targetPid = 0 Then Return False
+
+        Dim foregroundWnd As IntPtr = WinApi.GetForegroundWindow()
+        Dim foregroundProcId As Integer = 0
+
+        WinApi.GetWindowThreadProcessId(foregroundWnd, foregroundProcId)
+
+        Return (foregroundProcId = _targetPid)
+    End Function
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        Txt_pangya.Text = ConfigManager.GetValue("PangYakey", "49")
-        Txt_power.Text = ConfigManager.GetValue("Powerkey", "50")
-        Dim x As Integer = CInt(ConfigManager.GetValue("Form.X", "0"))
-        Dim y As Integer = CInt(ConfigManager.GetValue("Form.Y", "0"))
-        If x <> 0 And y <> 0 Then SetDesktopLocation(x, y)
+        Txt_pangya.Text = My.Settings.PangyaKey
+        Txt_power.Text = My.Settings.PowerKey
+
+        If My.Settings.FormLocation.IsEmpty = False AndAlso
+           (My.Settings.FormLocation.X <> 0 OrElse My.Settings.FormLocation.Y <> 0) Then
+
+            Me.StartPosition = FormStartPosition.Manual
+            Me.Location = My.Settings.FormLocation
+        End If
 
         Textset()
     End Sub
 
     Private Sub Form1_FormClosing(sender As Object, e As FormClosingEventArgs) Handles Me.FormClosing
         StopMonitoring()
-        ConfigManager.SetValue("Form.X", Location.X.ToString())
-        ConfigManager.SetValue("Form.Y", Location.Y.ToString())
-        ConfigManager.SetValue("PangYakey", Txt_pangya.Text)
-        ConfigManager.SetValue("Powerkey", Txt_power.Text)
+        If Me.WindowState = FormWindowState.Normal Then
+            My.Settings.FormLocation = Me.Location
+        Else
+            My.Settings.FormLocation = Me.RestoreBounds.Location
+        End If
+
+        My.Settings.PangyaKey = Txt_pangya.Text
+        My.Settings.PowerKey = Txt_power.Text
+
+        My.Settings.Save()
         WinApi.timeEndPeriod(1)
         Environment.Exit(0)
     End Sub
@@ -34,22 +59,6 @@ Public Class Form1
     Private Sub Textset()
         Cmb_spca.Text = "None"
         Cmb_tok.Text = "None"
-    End Sub
-
-    Private Sub CalculateGaugeParams(w As Integer, h As Integer)
-        Const BASE_HEIGHT As Single = 600.0F
-        Const BASE_LEN As Single = 450.0F
-        Const BASE_OFFSET_INIT As Single = -268.75F
-
-        Dim scale As Single = h / BASE_HEIGHT
-        Dim centerX As Single = w / 2.0F
-        Dim currentLen As Single = BASE_LEN * scale
-
-        _zeroPos = centerX - (currentLen / 2.0F)
-        _fullPos = centerX + (currentLen / 2.0F)
-
-        Dim targetFloat As Single = centerX + (BASE_OFFSET_INIT * scale)
-        _scanTargetInt = BitConverter.ToInt32(BitConverter.GetBytes(targetFloat), 0)
     End Sub
 
     Private Async Sub Btn_start_Click(sender As Object, e As EventArgs) Handles Btn_start.Click
@@ -61,29 +70,23 @@ Public Class Form1
             Return
         End If
 
-        _hProcess = WinApi.OpenProcess(WinApi.PROCESS_VM_READ Or WinApi.PROCESS_QUERY_INFORMATION, False, procs(0).Id)
+        Dim targetProc As Process = procs(0)
+        _targetPid = targetProc.Id
+        _hProcess = WinApi.OpenProcess(WinApi.PROCESS_VM_READ Or WinApi.PROCESS_QUERY_INFORMATION, False, targetProc.Id)
 
-        Dim height As Integer = MemoryScanner.ReadInt32(_hProcess, New IntPtr(&HF02330))
-        Dim width As Integer = MemoryScanner.ReadInt32(_hProcess, New IntPtr(&HF02334))
+        Dim moduleBase As IntPtr = targetProc.MainModule.BaseAddress
 
-        If width = 0 Or height = 0 Then
-            Dim rect As New WinApi.RECT()
-            WinApi.GetClientRect(procs(0).MainWindowHandle, rect)
-            width = rect.Right : height = rect.Bottom
-        End If
+        Dim staticAddress As IntPtr = IntPtr.Add(moduleBase, BASE_OFFSET)
 
-        CalculateGaugeParams(width, height)
+        _targetAddress = MemoryScanner.GetPointerAddress(_hProcess, staticAddress, POINTER_OFFSETS)
 
-        Dim foundAddresses As List(Of IntPtr) = MemoryScanner.ScanForValue(_hProcess, _scanTargetInt, 0, &H7FFFFFFF)
-
-        If foundAddresses IsNot Nothing AndAlso foundAddresses.Count > 0 Then
-            _candidateAddresses = foundAddresses
-            _targetAddress = IntPtr.Zero
-
+        If _targetAddress <> IntPtr.Zero Then
             Lb_state.Text = "Start"
             Lb_state.ForeColor = Color.Blue
             Btn_start.Enabled = False
             Btn_stop.Enabled = True
+            Txt_pangya.Enabled = False
+            Txt_power.Enabled = False
 
             WinApi.timeBeginPeriod(1)
             _isMonitoring = True
@@ -98,9 +101,11 @@ Public Class Form1
                 Lb_state.ForeColor = Color.Red
                 Btn_start.Enabled = True
                 Btn_stop.Enabled = False
+                Txt_pangya.Enabled = True
+                Txt_power.Enabled = True
             End If
         Else
-            MsgBox("Error: Setup failed.")
+            MsgBox("Error: Failed to supplement memory. (Please check administrator privileges or game version.)")
         End If
     End Sub
 
@@ -117,6 +122,8 @@ Public Class Form1
             Lb_state.ForeColor = Color.Red
             Btn_start.Enabled = True
             Btn_stop.Enabled = False
+            Txt_pangya.Enabled = True
+            Txt_power.Enabled = True
         End If
     End Sub
 
@@ -131,13 +138,10 @@ Public Class Form1
         Dim hasTargetFired As Boolean = False
         Dim hasReturnFired As Boolean = False
         Dim hasMidFired As Boolean = False
+
         Dim targetPercent As Double = 100.0
         Dim keyPangya As Integer = 0
         Dim keyPower As Integer = 0
-
-        Dim totalRange As Single = _fullPos - _zeroPos
-        If totalRange = 0 Then totalRange = 450.0F
-        Dim initFloatVal As Single = BitConverter.ToSingle(BitConverter.GetBytes(_scanTargetInt), 0)
 
         SafeInvoke(Sub()
                        keyPangya = CInt(Txt_pangya.Text)
@@ -147,28 +151,19 @@ Public Class Form1
         Do
             If token.IsCancellationRequested Then Exit Do
             If Me.IsDisposed Then Exit Do
-
-            If _targetAddress = IntPtr.Zero Then
-                For Each addr As IntPtr In _candidateAddresses
-                    Dim val As Single = MemoryScanner.ReadFloat(_hProcess, addr)
-                    If Math.Abs(val - initFloatVal) > 1.0F Then
-                        _targetAddress = addr
-                        Exit For
-                    End If
-                Next
-                If _targetAddress = IntPtr.Zero Then
-                    Thread.Sleep(10)
-                    Continue Do
-                End If
+            If Not IsGameActive() Then
+                Thread.Sleep(100)
+                Continue Do
             End If
 
-            Dim isPowerPressed As Boolean = (WinApi.GetAsyncKeyState(keyPower) And &H8000) <> 0
-            Dim isPangyaPressed As Boolean = (WinApi.GetAsyncKeyState(keyPangya) And &H8000) <> 0
+            Dim currentFloat As Single = MemoryScanner.ReadFloat(_hProcess, _targetAddress)
+
+            Dim currentPercent As Double = (currentFloat - GAUGE_0_VAL) / GAUGE_RANGE * 100.0
 
             SafeInvoke(Sub() Double.TryParse(Txt_p.Text, targetPercent))
 
-            Dim currentFloat As Single = MemoryScanner.ReadFloat(_hProcess, _targetAddress)
-            Dim currentPercent As Double = (currentFloat - _zeroPos) / totalRange * 100.0
+            Dim isPowerPressed As Boolean = (WinApi.GetAsyncKeyState(keyPower) And &H8000) <> 0
+            Dim isPangyaPressed As Boolean = (WinApi.GetAsyncKeyState(keyPangya) And &H8000) <> 0
 
             If isPowerPressed Then
                 If currentPercent >= targetPercent AndAlso Not hasTargetFired Then
@@ -194,6 +189,7 @@ Public Class Form1
                     InputController.ExecuteSingleKeyAsync(WinApi.VK_SPACE, 130)
                     hasReturnFired = True
                     SafeInvoke(Sub() Textset())
+                    Thread.Sleep(1000)
                 End If
             Else
                 hasReturnFired = False
