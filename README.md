@@ -5,7 +5,7 @@
 メモリ監視を使用した、PangYaの自動ショットツールです。
 
 ## 主な機能
-- メモリ読み取りによる正確なパワーゲージ監視(現在は800x600x32のみ)
+- メモリ読み取りによる正確なパワーゲージ監視
 - 指定％での自動スペースキー送信
 - スキルコマンド（トマホーク、コブラ等）とスピンの自動入力
 
@@ -26,7 +26,7 @@
 An automated shot tool for PangYa using memory monitoring.
 
 ## Main Features
-- Accurate power gauge monitoring via memory reading (currently only 800x600x32)
+- Accurate power gauge monitoring via memory reading 
 - Automatic spacebar presses at specified percentages
 - Automatic input of skill commands (Tomahawk, Cobra, etc.) and spins
 
