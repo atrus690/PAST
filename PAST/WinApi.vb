@@ -109,4 +109,8 @@ Public Class WinApi
     <DllImport("user32.dll")>
     Public Shared Function GetWindowThreadProcessId(ByVal hWnd As IntPtr, ByRef lpdwProcessId As Integer) As Integer
     End Function
+
+    <DllImport("kernel32.dll", SetLastError:=True)>
+    Public Shared Function CloseHandle(ByVal hObject As IntPtr) As Boolean
+    End Function
 End Class
