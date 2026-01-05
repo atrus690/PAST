@@ -215,6 +215,8 @@ Public Class Form1
         Dim keyPangya As Integer = 0
         Dim keyPower As Integer = 0
 
+        Dim lastRefreshTime As DateTime = DateTime.Now
+
         SafeInvoke(Sub()
                        keyPangya = CInt(Txt_pangya.Text)
                        keyPower = CInt(Txt_power.Text)
@@ -225,6 +227,7 @@ Public Class Form1
             If Me.IsDisposed Then Exit Do
 
             If Not IsProcessValid() Then
+                SafeInvoke(Sub() Lb_state.Text = "Searching...")
                 If Not AttachToGame() Then
                     Thread.Sleep(1000)
                     Continue Do
@@ -237,16 +240,20 @@ Public Class Form1
             End If
 
             Try
+                If (DateTime.Now - lastRefreshTime).TotalSeconds > 3 Then
+                    UpdateTargetAddress()
+                    lastRefreshTime = DateTime.Now
+                End If
+
                 Dim currentFloat As Single = MemoryScanner.ReadFloat(_hProcess, _targetAddress)
 
                 If currentFloat < 10.0F OrElse currentFloat >= 600.0F Then
-                    If (DateTime.Now - _lastAddressUpdate).TotalMilliseconds > 1000 Then
-                        If UpdateTargetAddress() Then
-                        End If
-                        _lastAddressUpdate = DateTime.Now
+                    If UpdateTargetAddress() Then
+                        currentFloat = MemoryScanner.ReadFloat(_hProcess, _targetAddress)
+                    Else
+                        Thread.Sleep(500)
+                        Continue Do
                     End If
-                    Thread.Sleep(100)
-                    Continue Do
                 End If
 
                 Dim currentPercent As Double = (currentFloat - GAUGE_0_VAL) / GAUGE_RANGE * 100.0

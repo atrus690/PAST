@@ -22,7 +22,6 @@ Partial Class Form1
     'コード エディターを使って変更しないでください。
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Me.components = New System.ComponentModel.Container()
         Me.Btn_start = New System.Windows.Forms.Button()
         Me.Btn_stop = New System.Windows.Forms.Button()
         Me.Lb_state = New System.Windows.Forms.Label()
@@ -30,9 +29,6 @@ Partial Class Form1
         Me.Txt_p = New System.Windows.Forms.TextBox()
         Me.Label4 = New System.Windows.Forms.Label()
         Me.Label5 = New System.Windows.Forms.Label()
-        Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
-        Me.Timer2 = New System.Windows.Forms.Timer(Me.components)
-        Me.Timer3 = New System.Windows.Forms.Timer(Me.components)
         Me.Cmb_tok = New System.Windows.Forms.ComboBox()
         Me.Cmb_spca = New System.Windows.Forms.ComboBox()
         Me.Label6 = New System.Windows.Forms.Label()
@@ -107,14 +103,6 @@ Partial Class Form1
         Me.Label5.Size = New System.Drawing.Size(36, 12)
         Me.Label5.TabIndex = 11
         Me.Label5.Text = "Power"
-        '
-        'Timer1
-        '
-        Me.Timer1.Interval = 900000
-        '
-        'Timer3
-        '
-        Me.Timer3.Interval = 1
         '
         'Cmb_tok
         '
@@ -217,9 +205,6 @@ Partial Class Form1
     Friend WithEvents Txt_p As System.Windows.Forms.TextBox
     Friend WithEvents Label4 As System.Windows.Forms.Label
     Friend WithEvents Label5 As System.Windows.Forms.Label
-    Friend WithEvents Timer1 As System.Windows.Forms.Timer
-    Friend WithEvents Timer2 As System.Windows.Forms.Timer
-    Friend WithEvents Timer3 As System.Windows.Forms.Timer
     Friend WithEvents Cmb_tok As System.Windows.Forms.ComboBox
     Friend WithEvents Cmb_spca As System.Windows.Forms.ComboBox
     Friend WithEvents Label6 As System.Windows.Forms.Label
