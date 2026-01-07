@@ -6,6 +6,7 @@ Public Class Form1
     Private Const GAUGE_RANGE As Single = GAUGE_100_VAL - GAUGE_0_VAL
     Private Const BASE_OFFSET As Integer = &HAFB0A0
     Private ReadOnly POINTER_OFFSETS As Integer() = {&H128, &HE8}
+    Private Const OFFSET_PANGYA_ZONE As Integer = &H14
 
     Private _targetAddress As IntPtr = IntPtr.Zero
     Private _hProcess As IntPtr = IntPtr.Zero
@@ -246,6 +247,12 @@ Public Class Form1
                 End If
 
                 Dim currentFloat As Single = MemoryScanner.ReadFloat(_hProcess, _targetAddress)
+                Dim pangyaZoneAddress As IntPtr = IntPtr.Add(_targetAddress, OFFSET_PANGYA_ZONE)
+                Dim pangyaZoneFloat As Single = MemoryScanner.ReadFloat(_hProcess, pangyaZoneAddress)
+
+                If pangyaZoneFloat < 100.0F OrElse pangyaZoneFloat > 200.0F Then
+                    pangyaZoneFloat = GAUGE_0_VAL
+                End If
 
                 If currentFloat < 10.0F OrElse currentFloat >= 600.0F Then
                     If UpdateTargetAddress() Then
@@ -276,9 +283,11 @@ Public Class Form1
                         hasMidFired = True
                     End If
 
-                    If currentPercent <= 0.2 AndAlso Not hasReturnFired Then
+                    If currentFloat <= pangyaZoneFloat AndAlso Not hasReturnFired Then
+
                         InputController.ExecuteSingleKeyAsync(WinApi.VK_SPACE, 130)
                         hasReturnFired = True
+                        SafeInvoke(Sub() Me.Text = "Shot at: " & currentFloat & " (Zone: " & pangyaZoneFloat & ")")
 
                         SafeInvoke(Sub() Textset())
                         Thread.Sleep(1000)
