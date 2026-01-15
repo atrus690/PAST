@@ -6,6 +6,7 @@ Public Class Form1
     Private Const GAUGE_RANGE As Single = GAUGE_100_VAL - GAUGE_0_VAL
     Private Const BASE_OFFSET As Integer = &HAFB0A0
     Private ReadOnly POINTER_OFFSETS As Integer() = {&H128, &HE8}
+    Private Const OFFSET_CURRENT_CURSOR As Integer = &H4
     Private Const OFFSET_PANGYA_ZONE As Integer = &H14
 
     Private _targetAddress As IntPtr = IntPtr.Zero
@@ -246,7 +247,8 @@ Public Class Form1
                     lastRefreshTime = DateTime.Now
                 End If
 
-                Dim currentFloat As Single = MemoryScanner.ReadFloat(_hProcess, _targetAddress)
+                Dim cursorAddress As IntPtr = IntPtr.Add(_targetAddress, OFFSET_CURRENT_CURSOR)
+                Dim currentFloat As Single = MemoryScanner.ReadFloat(_hProcess, cursorAddress)
                 Dim pangyaZoneAddress As IntPtr = IntPtr.Add(_targetAddress, OFFSET_PANGYA_ZONE)
                 Dim pangyaZoneFloat As Single = MemoryScanner.ReadFloat(_hProcess, pangyaZoneAddress)
 
@@ -264,13 +266,18 @@ Public Class Form1
                 End If
 
                 Dim currentPercent As Double = (currentFloat - GAUGE_0_VAL) / GAUGE_RANGE * 100.0
-                Dim targetPercent As Double = _targetPercentValue
                 Dim isPowerPressed As Boolean = (WinApi.GetAsyncKeyState(keyPower) And &H8000) <> 0
                 Dim isPangyaPressed As Boolean = (WinApi.GetAsyncKeyState(keyPangya) And &H8000) <> 0
 
                 If isPowerPressed Then
-                    If currentPercent >= targetPercent AndAlso Not hasTargetFired Then
-                        InputController.ExecuteSingleKeyAsync(WinApi.VK_SPACE, 130)
+
+                    Dim targetRawValue As Single = GAUGE_0_VAL + (GAUGE_RANGE * (CSng(_targetPercentValue) / 100.0F))
+                    Dim thresholdValue As Single = targetRawValue - 0.5F
+
+                    If currentFloat >= thresholdValue AndAlso Not hasTargetFired Then
+
+                        InputController.SendKeySync(WinApi.VK_SPACE, 130)
+
                         hasTargetFired = True
                     End If
                 Else
@@ -285,10 +292,9 @@ Public Class Form1
 
                     If currentFloat <= pangyaZoneFloat AndAlso Not hasReturnFired Then
 
-                        InputController.ExecuteSingleKeyAsync(WinApi.VK_SPACE, 130)
-                        hasReturnFired = True
-                        SafeInvoke(Sub() Me.Text = "Shot at: " & currentFloat & " (Zone: " & pangyaZoneFloat & ")")
+                        InputController.SendKeySync(WinApi.VK_SPACE, 130)
 
+                        hasReturnFired = True
                         SafeInvoke(Sub() Textset())
                         Thread.Sleep(1000)
                     End If

@@ -189,6 +189,7 @@ Partial Class Form1
         Me.Controls.Add(Me.Lb_state)
         Me.Controls.Add(Me.Btn_stop)
         Me.Controls.Add(Me.Btn_start)
+        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.MaximizeBox = False
         Me.MinimizeBox = False
         Me.Name = "Form1"

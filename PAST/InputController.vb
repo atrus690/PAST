@@ -37,7 +37,7 @@ Public Class InputController
                  End Sub)
     End Sub
 
-    Private Shared Sub SendKeySync(vKey As Integer, holdTime As Integer)
+    Public Shared Sub SendKeySync(vKey As Integer, holdTime As Integer)
         Dim scanCode As Short = CShort(WinApi.MapVirtualKey(CUInt(vKey), WinApi.MAPVK_VK_TO_VSC))
         Dim dwFlagsDown As Integer = WinApi.KEYEVENTF_SCANCODE
         Dim dwFlagsUp As Integer = WinApi.KEYEVENTF_SCANCODE Or WinApi.KEYEVENTF_KEYUP

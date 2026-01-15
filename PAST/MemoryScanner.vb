@@ -10,7 +10,7 @@ Public Class MemoryScanner
         For i As Integer = 0 To offsets.Length - 2
             If WinApi.ReadProcessMemory(hProcess, currentAddr, buffer, New IntPtr(4), bytesRead) Then
                 Dim ptrVal As Integer = BitConverter.ToInt32(buffer, 0)
-                If ptrVal = 0 Then Return IntPtr.Zero ' 読み取り失敗またはNullポインタ
+                If ptrVal = 0 Then Return IntPtr.Zero
                 currentAddr = New IntPtr(ptrVal + offsets(i))
             Else
                 Return IntPtr.Zero
