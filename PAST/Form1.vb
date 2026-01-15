@@ -270,8 +270,8 @@ Public Class Form1
                 Dim isPangyaPressed As Boolean = (WinApi.GetAsyncKeyState(keyPangya) And &H8000) <> 0
 
                 If isPowerPressed Then
-
-                    Dim targetRawValue As Single = GAUGE_0_VAL + (GAUGE_RANGE * (CSng(_targetPercentValue) / 100.0F))
+                    Dim rawCalc As Double = GAUGE_0_VAL + (GAUGE_RANGE * (_targetPercentValue / 100.0))
+                    Dim targetRawValue As Single = CSng(Math.Ceiling(rawCalc))
                     Dim thresholdValue As Single = targetRawValue - 0.5F
 
                     If currentFloat >= thresholdValue AndAlso Not hasTargetFired Then
