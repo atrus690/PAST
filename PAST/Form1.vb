@@ -290,7 +290,11 @@ Public Class Form1
                         hasMidFired = True
                     End If
 
-                    If currentFloat <= pangyaZoneFloat AndAlso Not hasReturnFired Then
+                    Dim safetyMargin As Single = 2.0F
+
+                    If currentFloat <= pangyaZoneFloat AndAlso
+                       currentFloat >= (pangyaZoneFloat - safetyMargin) AndAlso
+                       Not hasReturnFired Then
 
                         InputController.SendKeySync(WinApi.VK_SPACE, 130)
 
