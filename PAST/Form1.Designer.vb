@@ -22,6 +22,7 @@ Partial Class Form1
     'コード エディターを使って変更しないでください。
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
+        Me.components = New System.ComponentModel.Container()
         Me.Btn_start = New System.Windows.Forms.Button()
         Me.Btn_stop = New System.Windows.Forms.Button()
         Me.Lb_state = New System.Windows.Forms.Label()
@@ -36,6 +37,7 @@ Partial Class Form1
         Me.Txt_pangya = New System.Windows.Forms.TextBox()
         Me.Txt_power = New System.Windows.Forms.TextBox()
         Me.Label8 = New System.Windows.Forms.Label()
+        Me.tmrUdpReceiver = New System.Windows.Forms.Timer(Me.components)
         Me.SuspendLayout()
         '
         'Btn_start
@@ -213,4 +215,5 @@ Partial Class Form1
     Friend WithEvents Txt_pangya As System.Windows.Forms.TextBox
     Friend WithEvents Txt_power As System.Windows.Forms.TextBox
     Friend WithEvents Label8 As System.Windows.Forms.Label
+    Friend WithEvents tmrUdpReceiver As Timer
 End Class

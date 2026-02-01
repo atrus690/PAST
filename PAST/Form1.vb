@@ -1,4 +1,7 @@
 ﻿Imports System.Threading
+Imports System.Net
+Imports System.Net.Sockets
+Imports System.Text
 
 Public Class Form1
     Private Const GAUGE_0_VAL As Single = 140.0F
@@ -20,6 +23,7 @@ Public Class Form1
     Private _targetPercentValue As Double = 0
     Private _commandText As String = ""
     Private _spinText As String = ""
+    Private udpServer As UdpClient
 
     Private Function IsProcessValid() As Boolean
         If _targetPid = 0 OrElse _hProcess = IntPtr.Zero Then Return False
@@ -110,6 +114,11 @@ Public Class Form1
 
         Textset()
         Double.TryParse(Txt_p.Text, _targetPercentValue)
+        Try
+            udpServer = New UdpClient(12345)
+        Catch ex As Exception
+            MessageBox.Show("通信ポートの開放に失敗しました: " & ex.Message)
+        End Try
     End Sub
 
     Private Sub Txt_p_TextChanged(sender As Object, e As EventArgs) Handles Txt_p.TextChanged
@@ -125,6 +134,10 @@ Public Class Form1
     End Sub
 
     Private Sub Form1_FormClosing(sender As Object, e As FormClosingEventArgs) Handles Me.FormClosing
+        If udpServer IsNot Nothing Then
+            udpServer.Close()
+        End If
+
         StopMonitoring()
         If Me.WindowState = FormWindowState.Normal Then
             My.Settings.FormLocation = Me.Location
@@ -156,6 +169,7 @@ Public Class Form1
         Btn_stop.Enabled = True
         Txt_pangya.Enabled = False
         Txt_power.Enabled = False
+        tmrUdpReceiver.Enabled = True
 
         _commandText = Cmb_tok.Text
         _spinText = Cmb_spca.Text
@@ -176,7 +190,9 @@ Public Class Form1
             Btn_stop.Enabled = False
             Txt_pangya.Enabled = True
             Txt_power.Enabled = True
+            tmrUdpReceiver.Enabled = False
         End If
+
     End Sub
 
     Private Sub Btn_stop_Click(sender As Object, e As EventArgs) Handles Btn_stop.Click
@@ -200,6 +216,7 @@ Public Class Form1
             Btn_stop.Enabled = False
             Txt_pangya.Enabled = True
             Txt_power.Enabled = True
+            tmrUdpReceiver.Enabled = False
         End If
     End Sub
 
@@ -313,6 +330,32 @@ Public Class Form1
 
             Thread.Sleep(0)
         Loop
+    End Sub
+
+    Private Sub tmrUdpReceiver_Tick(sender As Object, e As EventArgs) Handles tmrUdpReceiver.Tick
+        If udpServer Is Nothing Then Return
+
+        Try
+            If udpServer.Available > 0 Then
+
+                Dim remoteEP As IPEndPoint = Nothing
+                Dim rcvBytes As Byte() = Nothing
+
+                While udpServer.Available > 0
+                    rcvBytes = udpServer.Receive(remoteEP)
+                End While
+
+                If rcvBytes IsNot Nothing Then
+                    Dim rcvStr As String = Encoding.UTF8.GetString(rcvBytes)
+
+                    If Txt_p.Text <> rcvStr Then
+                        Txt_p.Text = rcvStr
+                    End If
+                End If
+
+            End If
+        Catch ex As Exception
+        End Try
     End Sub
 
 End Class
