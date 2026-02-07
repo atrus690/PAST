@@ -11,6 +11,7 @@ Public Class Form1
     Private ReadOnly POINTER_OFFSETS As Integer() = {&H128, &HE8}
     Private Const OFFSET_CURRENT_CURSOR As Integer = &H4
     Private Const OFFSET_PANGYA_ZONE As Integer = &H14
+    Private Const SAFETY_MARGIN As Single = 1.0F
 
     Private _targetAddress As IntPtr = IntPtr.Zero
     Private _hProcess As IntPtr = IntPtr.Zero
@@ -291,7 +292,9 @@ Public Class Form1
                     Dim targetRawValue As Single = CSng(Math.Ceiling(rawCalc))
                     Dim thresholdValue As Single = targetRawValue - 0.5F
 
-                    If currentFloat >= thresholdValue AndAlso Not hasTargetFired Then
+                    If currentFloat >= thresholdValue AndAlso
+                       currentFloat <= (thresholdValue + SAFETY_MARGIN) AndAlso
+                       Not hasTargetFired Then
 
                         InputController.SendKeySync(WinApi.VK_SPACE, 130)
 
@@ -307,16 +310,18 @@ Public Class Form1
                         hasMidFired = True
                     End If
 
-                    Dim safetyMargin As Single = 2.0F
-
                     If currentFloat <= pangyaZoneFloat AndAlso
-                       currentFloat >= (pangyaZoneFloat - safetyMargin) AndAlso
+                       currentFloat >= (pangyaZoneFloat - SAFETY_MARGIN) AndAlso
                        Not hasReturnFired Then
 
                         InputController.SendKeySync(WinApi.VK_SPACE, 130)
 
                         hasReturnFired = True
                         SafeInvoke(Sub() Textset())
+
+                        GC.Collect()
+                        GC.WaitForPendingFinalizers()
+
                         Thread.Sleep(1000)
                     End If
                 Else

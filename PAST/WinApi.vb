@@ -47,6 +47,14 @@ Public Class WinApi
     Public Shared Function GetClientRect(ByVal hWnd As IntPtr, ByRef lpRect As RECT) As Boolean
     End Function
 
+    <DllImport("kernel32.dll")>
+    Public Shared Function ReadProcessMemory(hProcess As IntPtr, lpBaseAddress As IntPtr, ByRef lpBuffer As Single, nSize As IntPtr, ByRef lpNumberOfBytesRead As IntPtr) As Boolean
+    End Function
+
+    <DllImport("kernel32.dll")>
+    Public Shared Function ReadProcessMemory(hProcess As IntPtr, lpBaseAddress As IntPtr, ByRef lpBuffer As Integer, nSize As IntPtr, ByRef lpNumberOfBytesRead As IntPtr) As Boolean
+    End Function
+
     <DllImport("winmm.dll")>
     Public Shared Function timeBeginPeriod(ByVal uPeriod As UInteger) As UInteger
     End Function
@@ -54,6 +62,8 @@ Public Class WinApi
     <DllImport("winmm.dll")>
     Public Shared Function timeEndPeriod(ByVal uPeriod As UInteger) As UInteger
     End Function
+
+
 
     <StructLayout(LayoutKind.Sequential)>
     Public Structure RECT
